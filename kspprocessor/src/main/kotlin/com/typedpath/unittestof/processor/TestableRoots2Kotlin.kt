@@ -41,13 +41,13 @@ class TestableRoots2Kotlin(private val emitJava: Boolean) {
 ${import(beanContextClassName)}    
 ${if (!emitJava) "class $className : ${beanContextShortName}<${root.shortName}>() {" else 
 "public class $className extends ${beanContextShortName}<${root.shortName}> {"}
-${root.constructorParams.map {(
-"""    ${recorderDeclaration(it)}
+${root.constructorParams.joinToString (System.lineSeparator()){(
+        """    ${recorderDeclaration(it)}
     ${serviceDeclaration(it)} 
 """
-)}.joinToString (System.lineSeparator())}    
-${if (!emitJava)"    override val target = ${root.shortName}(${root.constructorParams.map { "${it.name}Recorder.proxy" }.joinToString (", ")})" else 
-"""    final ${root.shortName} target= new ${root.shortName}(${root.constructorParams.map { "${it.name}Recorder.getProxy()" }.joinToString (", ")});
+        )}}    
+${if (!emitJava)"    override val target = ${root.shortName}(${root.constructorParams.joinToString(", ") { "${it.name}Recorder.proxy" }})" else 
+"""    final ${root.shortName} target= new ${root.shortName}(${root.constructorParams.joinToString(", ") { "${it.name}Recorder.getProxy()" }});
     @Override
     public ${root.shortName} getTarget() {
         return target;
@@ -65,11 +65,18 @@ private fun serviceDeclaration(param: Model2FactoryMapper.FactoryClassParam) = i
     """val ${param.name} = ${param.name}Recorder.proxy""" else
     """public final ${param.type} ${param.name} = ${param.name}Recorder.getProxy(); """
 
-fun import(target: String) = "import $target${if (emitJava) ";" else ""}"
+private fun import(target: String) = "import $target${if (emitJava) ";" else ""}"
 
 data class Interface(val packageName: String, val shortName: String, val methods: List<Method>) {
     data class Method(val name: String, val returnType: String, val params: List<Param>) {
-        fun methodId() =  "${name}_${params.map { conciseTypeString( it.type).replace(".", "_") }.joinToString ("_")}"
+        fun methodId() =  "${name}_${
+            params.joinToString("_") {
+                conciseTypeString(it.type).replace(
+                    ".",
+                    "_"
+                )
+            }
+        }"
     }
     data class Param(val name: String, val type: String)
     companion object {
@@ -84,13 +91,13 @@ ${import(callLogClassName)}
 ${import(matcherClassName)}
 ${import(matchRowClassName)}
 ${proxyContextClassDeclaration(iface, className)}
-${iface.methods.map{textProxyContextMethod(it) }.joinToString (System.lineSeparator())}
-${iface.methods.map{testProxyContextCaptureMethod(it)}.joinToString (System.lineSeparator())}
+${iface.methods.joinToString(System.lineSeparator()) { textProxyContextMethod(it) }}
+${iface.methods.joinToString(System.lineSeparator()) { testProxyContextCaptureMethod(it) }}
 }
     """)
     }
 
-fun proxyContextClassDeclaration(iface: Interface, className: String) : String {
+private fun proxyContextClassDeclaration(iface: Interface, className: String) : String {
     return if (!emitJava) {
 """@Suppress("unused")
 class ${className}(callCentre: ${callLogClassShortName}, id: String) : ${serviceProxyContextClassname}<${iface.shortName}>(${iface.packageName}.${iface.shortName}::class, callCentre, id) {"""
@@ -103,34 +110,60 @@ public ${className}(${callLogClassShortName} callCentre, String id) {
 
 private fun textProxyContextMethod(method: Interface.Method) = if (!emitJava)
 """    @Suppress("UNUSED_PARAMETER")
-    fun when${method.name.replaceFirstChar { it.titlecase() }}(${method.params.map { textProxyContextParam(it) }
-    .joinToString(separator = ", ")} ${if (method.params.size>0) ", " else ""} result: ${method.returnType.replace("java.lang.", "")}) {
-       callCentre.add(${matchRowSimpleClassName}(id, "${method.methodId()}", listOf(${method.params.map { it.name }.joinToString (", ")}), result))
+    fun when${method.name.replaceFirstChar { it.titlecase() }}(${
+    method.params.joinToString(
+        separator = ", "
+    ) { textProxyContextParam(it) }
+} ${if (method.params.isNotEmpty()) ", " else ""} result: ${method.returnType.replace("java.lang.", "")}) {
+       callCentre.add(${matchRowSimpleClassName}(id, "${method.methodId()}", listOf(${
+    method.params.joinToString(
+        ", "
+    ) { it.name }
+}), result))
     }
 """ else
-"""    public void when${method.name.replaceFirstChar { it.titlecase() }}(${method.params.map { textProxyContextParam(it) }
-    .joinToString(separator = ", ")} ${if (method.params.size>0) ", " else ""}  ${method.returnType.replace("java.lang.", "")} result) {
-       getCallCentre().add(new ${matchRowSimpleClassName}(getId(), "${method.methodId()}", java.util.Arrays.asList(${method.params.map { it.name }.joinToString (", ")}), result));
+"""    public void when${method.name.replaceFirstChar { it.titlecase() }}(${
+    method.params.joinToString(
+        separator = ", "
+    ) { textProxyContextParam(it) }
+} ${if (method.params.isNotEmpty()) ", " else ""}  ${method.returnType.replace("java.lang.", "")} result) {
+       getCallCentre().add(new ${matchRowSimpleClassName}(getId(), "${method.methodId()}", java.util.Arrays.asList(${
+    method.params.joinToString(
+        ", "
+    ) { it.name }
+}), result));
     }"""
 
-fun customCaptureTypeName(method: Interface.Method) = "${method.methodId()}Params"
+private fun customCaptureTypeName(method: Interface.Method) = "${method.methodId()}Params"
 
 
-private fun customCaptureType(method: Interface.Method) = if (!emitJava) "data class ${customCaptureTypeName(method)}( ${method.params.map{
-    "val ${it.name}: ${conciseTypeString(it.type)}" }.joinToString (", ")} )" else
+private fun customCaptureType(method: Interface.Method) = if (!emitJava) "data class ${customCaptureTypeName(method)}( ${
+    method.params.joinToString(", ") {
+        "val ${it.name}: ${conciseTypeString(it.type)}"
+    }
+} )" else
 """public static class ${customCaptureTypeName(method)} {
-${method.params.map{
-"    public ${conciseTypeString(it.type)} ${it.name};" }.joinToString (System.lineSeparator())}
-    public ${customCaptureTypeName(method)} (${method.params.map{
-    "${conciseTypeString(it.type)} ${it.name}" }.joinToString (", ")}) {
-${method.params.map{
-"      this.${it.name}=${it.name};" }.joinToString (System.lineSeparator())}    
+${
+    method.params.joinToString(System.lineSeparator()) {
+        "    public ${conciseTypeString(it.type)} ${it.name};"
+    }
+}
+    public ${customCaptureTypeName(method)} (${
+    method.params.joinToString(", ") {
+        "${conciseTypeString(it.type)} ${it.name}"
+    }
+}) {
+${
+    method.params.joinToString(System.lineSeparator()) {
+        "      this.${it.name}=${it.name};"
+    }
+}    
     }
     }"""
 
-fun testProxyContextCaptureMethod(method: Interface.Method) : String {
+private fun testProxyContextCaptureMethod(method: Interface.Method) : String {
 return (
-"""    ${if (method.params.size==0) testProxyContextCaptureMethodZeroParam(method) else if (method.params.size>1) testProxyContextCaptureMethodMultiParam(method) else testProxyContextCaptureMethodSingleParam(method)}        
+"""    ${if (method.params.isEmpty()) testProxyContextCaptureMethodZeroParam(method) else if (method.params.size>1) testProxyContextCaptureMethodMultiParam(method) else testProxyContextCaptureMethodSingleParam(method)}        
 """)}
 
 private fun testProxyContextCaptureMethodMultiParam(method: Interface.Method) : String {
@@ -138,30 +171,42 @@ private fun testProxyContextCaptureMethodMultiParam(method: Interface.Method) : 
         return if (!emitJava)
  """${customCaptureType(method)}        
     @Suppress("UNUSED_PARAMETER")
-    fun capture${method.name.replaceFirstChar { it.titlecase() }}(${method.params.map { textProxyContextParam(it) }
-            .joinToString(separator = ", ")} ) : List<${captureType}> {
+    fun capture${method.name.replaceFirstChar { it.titlecase() }}(${
+     method.params.joinToString(
+         separator = ", "
+     ) { textProxyContextParam(it) }
+ } ) : List<${captureType}> {
        return callCentre.getArgumentsByProxyIdMethodId(id, "${method.methodId()}").map { ${captureType}(${
            method.params.mapIndexed { i, a -> "it[$i] ${conciseTypeCast( a.type)}"  }.joinToString(",")})  } 
     }
 """ else
 """${customCaptureType(method)} 
-    public java.util.List<${captureType}> capture${method.name.replaceFirstChar { it.titlecase() }}(${method.params.map { textProxyContextParam(it) }
-    .joinToString(separator = ", ")} ) {
+    public java.util.List<${captureType}> capture${method.name.replaceFirstChar { it.titlecase() }}(${
+    method.params.joinToString(
+        separator = ", "
+    ) { textProxyContextParam(it) }
+} ) {
        return getCallCentre().getArgumentsByProxyIdMethodId(getId(), "${method.methodId()}").stream().map (it-> new ${captureType}(${
     method.params.mapIndexed { i, a -> "(${conciseTypeString( a.type)}) it[$i]"  }.joinToString(",")})  ).collect(java.util.stream.Collectors.toList()); 
     }    
 """}
 
-fun testProxyContextCaptureMethodSingleParam(method: Interface.Method) : String {
+private fun testProxyContextCaptureMethodSingleParam(method: Interface.Method) : String {
  return if(!emitJava)
 """    @Suppress("UNUSED_PARAMETER")
-    fun capture${method.name.replaceFirstChar { it.titlecase() }}(${method.params.map { textProxyContextParam(it) }
-    .joinToString(separator = ", ")} ) : List<${conciseTypeString( method.params[0].type)}> {
+    fun capture${method.name.replaceFirstChar { it.titlecase() }}(${
+    method.params.joinToString(
+        separator = ", "
+    ) { textProxyContextParam(it) }
+} ) : List<${conciseTypeString( method.params[0].type)}> {
        return callCentre.getArgumentsByProxyIdMethodId(id, "${method.methodId()}").map { it[0] ${conciseTypeCast( method.params[0].type)}  } 
     }     
 """ else
-"""public java.util.List<${conciseTypeString( method.params[0].type)}> capture${method.name.replaceFirstChar { it.titlecase() }}(${method.params.map { textProxyContextParam(it) }
-    .joinToString(separator = ", ")} ) {
+"""public java.util.List<${conciseTypeString( method.params[0].type)}> capture${method.name.replaceFirstChar { it.titlecase() }}(${
+    method.params.joinToString(
+        separator = ", "
+    ) { textProxyContextParam(it) }
+} ) {
        return getCallCentre().getArgumentsByProxyIdMethodId(getId(), "${method.methodId()}").stream().map (it -> (${conciseTypeString( method.params[0].type)}) it[0] ).collect(java.util.stream.Collectors.toList()); 
     } """
 }
@@ -169,23 +214,29 @@ fun testProxyContextCaptureMethodSingleParam(method: Interface.Method) : String 
 private fun testProxyContextCaptureMethodZeroParam(method: Interface.Method) : String {
         return if (!emitJava)
 """    @Suppress("UNUSED_PARAMETER")
-    fun capture${method.name.replaceFirstChar { it.titlecase() }}(${method.params.map { textProxyContextParam(it) }
-                    .joinToString(separator = ", ")} ) : List<Any> {
+    fun capture${method.name.replaceFirstChar { it.titlecase() }}(${
+    method.params.joinToString(
+        separator = ", "
+    ) { textProxyContextParam(it) }
+} ) : List<Any> {
        return callCentre.getArgumentsByProxyIdMethodId(id, "${method.methodId()}").map { listOf<Any>()  } 
     }     
 """ else
-"""java.util.List<Object> capture${method.name.replaceFirstChar { it.titlecase() }}(${method.params.map { textProxyContextParam(it) }
-    .joinToString(separator = ", ")} ) : List<Any> {
+"""java.util.List<Object> capture${method.name.replaceFirstChar { it.titlecase() }}(${
+    method.params.joinToString(
+        separator = ", "
+    ) { textProxyContextParam(it) }
+} ) : List<Any> {
        return getCallCentre.getArgumentsByProxyIdMethodId(getId(), "${method.methodId()}").map { java.util.Arrays.asList()  } 
     } """
     }
 
-fun textProxyContextParam(param: Interface.Param) = if (!emitJava)
+private fun textProxyContextParam(param: Interface.Param) = if (!emitJava)
         """${param.name}: Match<${conciseTypeString(param.type)}>"""
     else """Match<${conciseTypeString(param.type)}> ${param.name}"""
 
 private fun header(packagename: String, creator: String) = (
-"""${if (packagename.trim().length == 0) "" else "package $packagename${if (emitJava) ";" else ""}"}        
+"""${if (packagename.trim().isEmpty()) "" else "package $packagename${if (emitJava) ";" else ""}"}        
 // Factory generated on ${Date()}
 //   by ${javaClass.name}
 //   for $creator    

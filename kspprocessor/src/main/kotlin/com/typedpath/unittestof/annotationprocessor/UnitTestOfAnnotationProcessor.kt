@@ -115,7 +115,7 @@ class UnitTestOfAnnotationProcessor : AbstractProcessor() {
             sourceFile.parentFile.mkdirs()
             sourceFile.writeText(src)
         } else {
-            processingEnv.filer.createSourceFile(packageName+"." + className).openWriter().use {
+            processingEnv.filer.createSourceFile("$packageName.$className").openWriter().use {
                   it.write(src)
             }
         }
@@ -124,7 +124,7 @@ class UnitTestOfAnnotationProcessor : AbstractProcessor() {
 
     private fun printEl(element: Element, margin: String ="") {
         warn("$margin $element ${element.enclosingElement}")
-        element.enclosedElements.forEach { printEl(it, margin + " ") }
+        element.enclosedElements.forEach { printEl(it, "$margin ") }
     }
 
     private fun fullName(el: Element) =  "${processingEnv.elementUtils.getPackageOf(el).qualifiedName}.${el.simpleName}"
@@ -154,7 +154,7 @@ class UnitTestOfAnnotationProcessor : AbstractProcessor() {
             .map {
                 it as ExecutableElement
             }
-        if (constructors.size == 0) {
+        if (constructors.isEmpty()) {
             return emptyMap()
         }
 
@@ -167,17 +167,17 @@ class UnitTestOfAnnotationProcessor : AbstractProcessor() {
 
         val result =  constructors.flatMap { it.parameters }.map {
             (it.asType() as DeclaredType).asElement() as TypeElement
-        }.map {
-            val fullName = it.qualifiedName.toString()
+        }.associate { paramEl ->
+            val fullName = paramEl.qualifiedName.toString()
             val lastDotIndex = fullName.lastIndexOf(".")
             val strPackage = if (lastDotIndex>0) fullName.substring(0, lastDotIndex) else ""
-            it.qualifiedName.toString() to
+            paramEl.qualifiedName.toString() to
                TestableRoots2Kotlin.Interface(
                       packageName = strPackage,
-                      shortName = it.simpleName.toString(),
-                      methods =  it.enclosedElements.filter { ElementKind.METHOD == it.kind  }.map { asMethod( it as ExecutableElement) }
+                      shortName = paramEl.simpleName.toString(),
+                      methods =  paramEl.enclosedElements.filter { ElementKind.METHOD == it.kind  }.map { asMethod( it as ExecutableElement) }
             )
-        }.toMap()
+        }
         return result
     }
 
@@ -187,7 +187,7 @@ class UnitTestOfAnnotationProcessor : AbstractProcessor() {
             .map {
                 it as ExecutableElement
             }
-        val constructorParameters: List<Model2FactoryMapper.FactoryClassParam> = if (constructors.size==0) mutableListOf()  else
+        val constructorParameters: List<Model2FactoryMapper.FactoryClassParam> = if (constructors.isEmpty()) mutableListOf()  else
             constructors[0].parameters.map { Model2FactoryMapper.FactoryClassParam(name = it.simpleName.toString(),
                 it.asType().toString())
             }

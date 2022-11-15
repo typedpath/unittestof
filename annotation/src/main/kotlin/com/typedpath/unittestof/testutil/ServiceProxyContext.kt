@@ -11,7 +11,7 @@ open class ServiceProxyContext<T>(kclass: KClass<*>, val callCentre: CallCentre,
 
     private val methodId2Arguments = mutableMapOf<String, MutableList<Array<Any>>>()
 
-    val dynamicInvocationHandler = { _: Any, method: Method, args: Array<Any>  ->
+    private val dynamicInvocationHandler = { _: Any, method: Method, args: Array<Any>  ->
         val methodId = CallCentre.MatchRow.methodId(method)
         callCentre.addCall(id, methodId, args)
         callCentre.match(id, methodId, args)
@@ -20,8 +20,6 @@ open class ServiceProxyContext<T>(kclass: KClass<*>, val callCentre: CallCentre,
     @Suppress("unchecked")
     val proxy = Proxy.newProxyInstance(
        kclass.java.classLoader,  arrayOf<Class<*>>(kclass.java), dynamicInvocationHandler) as T
-
-    val methods = kclass.java.methods
 }
 
 fun <T> verify(context: ServiceProxyContext<T>, block: T.() ->Unit) : List<String> {

@@ -42,24 +42,25 @@ class UnitTestOfKspSymbolProcessor(private val environment: SymbolProcessorEnvir
         val name2IFace = mutableMapOf<String, TestableRoots2Kotlin.Interface>()
         producingClassDecs
             .onEach { "checkoing for ints: ${it.fullName()}" }
-            .flatMap {
-            it.constructorParams.map { it.type }
-        }.forEach {
-            val ifaceDec = resolver.getClassDeclarationByName(resolver.getKSNameFromString(it))!!
+            .flatMap { it ->
+                it.constructorParams.map { it.type }
+        }.forEach { it ->
+                val ifaceDec = resolver.getClassDeclarationByName(resolver.getKSNameFromString(it))!!
             val iface = TestableRoots2Kotlin.Interface(
                 packageName = ifaceDec.qualifiedName!!.getQualifier(),
                 shortName = ifaceDec.qualifiedName!!.getShortName(),
-                methods = ifaceDec.getAllFunctions().map { TestableRoots2Kotlin.Interface.Method(
-                    name = it.qualifiedName!!.getShortName(),
-                    returnType = fullName(it.returnType!!.resolve().declaration.qualifiedName),
-                    params = it.parameters.map { TestableRoots2Kotlin.Interface.Param(name = it.name!!.getShortName(),
+                methods = ifaceDec.getAllFunctions().map { function ->
+                    TestableRoots2Kotlin.Interface.Method(
+                    name = function.qualifiedName!!.getShortName(),
+                    returnType = fullName(function.returnType!!.resolve().declaration.qualifiedName),
+                    params = function.parameters.map { TestableRoots2Kotlin.Interface.Param(name = it.name!!.getShortName(),
                         type=it.type.toString()) }
                 ) }.toList())
             name2IFace[fullName(ifaceDec.qualifiedName)] = iface
         }
 
-        name2IFace.forEach {
-            val iface: TestableRoots2Kotlin.Interface = it.value
+        name2IFace.forEach { theName ->
+            val iface: TestableRoots2Kotlin.Interface = theName.value
             val className =  TestableRoots2Kotlin.Interface.interfaceName2TestProxyName(iface.shortName)
 
             val fileKt = environment.codeGenerator.createNewFile(
@@ -78,9 +79,9 @@ class UnitTestOfKspSymbolProcessor(private val environment: SymbolProcessorEnvir
             fileKt.flush()
         }
 
-        producingClassDecs.forEach {
-            val packageName = it.packageName
-            val className = "${it.shortName}TestContext"
+        producingClassDecs.forEach { classDecl ->
+            val packageName = classDecl.packageName
+            val className = "${classDecl.shortName}TestContext"
 
             val fileKt = environment.codeGenerator.createNewFile(
                 Dependencies(false),
@@ -92,7 +93,7 @@ class UnitTestOfKspSymbolProcessor(private val environment: SymbolProcessorEnvir
                 javaClass.simpleName,
                 packageName,
                 className,
-                it
+                classDecl
             )
             fileKt.bufferedWriter().use { it.write(strKotlin) }
             fileKt.flush()

@@ -15,11 +15,10 @@ class CallCentre {
         }
         @SuppressWarnings("unchecked")
         fun matchUntyped(o: Any?) : Boolean {
-            try {
-                return match(o as T)
-            }
-            catch (ex: Exception) {
-                return false
+            return try {
+                match(o as T)
+            } catch (ex: Exception) {
+                false
             }
         }
     }
@@ -30,7 +29,7 @@ class CallCentre {
             private fun normalizeTypeName(name: String) = name.replace("java.lang.", "")
 
             fun methodId(m: Method) =
-                "${m.name}_${m.parameterTypes.map { normalizeTypeName(it.name) }.joinToString("_")}"
+                "${m.name}_${m.parameterTypes.joinToString("_"){ normalizeTypeName(it.name) }}"
         }
         fun matches(proxyIdIn: String, methodIdIn: String, args: Array<Any>) : Boolean =
             proxyIdIn == proxyId && methodIdIn == strMethod &&
@@ -45,9 +44,11 @@ class CallCentre {
         val matchRow = matchRows.find { it.matches(proxyId, methodId, args)  }
         matchRow?.let{ println("matched ${proxyId}.${methodId} => ${it.result}")}?:
         error(
-            "unmatched call to ${proxyId}.${methodId}(${args.map {""+it }.joinToString(",")}) in ${matchRows.map {
-                it.strMethod
-            }.joinToString (",")}")
+            "unmatched call to ${proxyId}.${methodId}(${args.joinToString(","){""+it }}) in ${
+                matchRows.joinToString(",") {
+                    it.strMethod
+                }
+            }")
         return matchRow.result
     }
 
@@ -63,7 +64,7 @@ class CallCentre {
                 return false
             }
 
-            for (i in 0 until args.size) {
+            for (i in args.indices) {
                 if (args[i] !=  other.args[i]) return false
             }
             return true

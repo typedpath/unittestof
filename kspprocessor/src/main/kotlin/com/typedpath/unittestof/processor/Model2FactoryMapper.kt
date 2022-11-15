@@ -20,13 +20,21 @@ class Model2FactoryMapper {
 
     companion object {
         private fun asString(p: FactoryClassParam) = """${p.name}:${p.type}"""
-        fun asString(f: FactoryClass)  = """${f.packageName}.${f.shortName} => ${f.constructorParams.map { asString(it) }.joinToString (", ")}"""
-        private fun asString(f: Factory) = """implemented: ${f.implementedName} implementor: ${f.implementorName} dependencies: ${f.dependencies.map { asString(it) }.joinToString (", ")}"""
+        fun asString(f: FactoryClass)  = """${f.packageName}.${f.shortName} => ${f.constructorParams.joinToString (", "){ asString(it) }}"""
+        private fun asString(f: Factory) = """implemented: ${f.implementedName} implementor: ${f.implementorName} dependencies: ${f.dependencies.joinToString (", "){ asString(it) }}"""
         fun asString(fr: FactoryResult) =(
 """factories (${fr.factories.size}): 
       ${fr.factories.map { "${it.key}=>${asString(it.value)}" }.joinToString ("${System.lineSeparator()}    ")}
 unresolvedPaths (${fr.unresolvedPaths.size}):  
-        ${fr.unresolvedPaths.map{ path -> path.map { asString(it) }.joinToString(", ")     }.joinToString ("    ${System.lineSeparator()}")}  """)
+        ${
+    fr.unresolvedPaths.joinToString("    ${System.lineSeparator()}") { path ->
+        path.joinToString(", ") {
+            asString(
+                it
+            )
+        }
+    }
+}  """)
     }
 
 }

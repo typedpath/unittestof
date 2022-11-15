@@ -5,7 +5,7 @@ import kotlin.math.max
 class Verifier : IVerifier {
     private fun string(call: CallCentre.Call?): String =
         if (call == null) "null" else "${call.proxyId}/${call.methodId} (${
-            call.args.map { "$it" }.joinToString(",")
+            call.args.joinToString(",") { "$it" }
         })"
 
     override fun matchExactUnordered(testCalls: List<CallCentre.Call>, matchCalls: List<CallCentre.Call>): List<String> {
@@ -20,11 +20,11 @@ class Verifier : IVerifier {
             diffCount++
             result.add("callCount: ${testCalls.size} but expected ${matchCalls.size}")
         }
-        val unmatchedTestCalls = (0 until testCalls.size).toMutableSet()
-        for (m in 0 until matchCalls.size) {
+        val unmatchedTestCalls = testCalls.indices.toMutableSet()
+        for (m in matchCalls.indices) {
             val matchCall = matchCalls[m]
             var callMatched=false
-            for ( t in 0  until testCalls.size  ) {
+            for ( t in testCalls.indices ) {
                 if (!unmatchedTestCalls.contains(t)) continue
                 val diff = testCalls[t] != matchCall
                 if (!diff) {

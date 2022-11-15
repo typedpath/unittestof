@@ -52,7 +52,7 @@ class BeanContextTest {
         assertIterableEquals(testCalls,
               verifierStub.callName2Params[verifyMethod]?.first
             )
-        // check match calls havent been retained
+        // check match calls have not been retained
         BeanContext.verify(context, ordering = BeanContext.Companion.OrderingOption.OrderedExact,
             failAction = {errors->actualVerifierResult = errors}
         ) { }

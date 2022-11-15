@@ -41,7 +41,7 @@ abstract class BeanContext<T>(val verifier:IVerifier = Verifier()) {
                 OrderingOption.Unordered -> context.verifier.matchUnordered(testCalls, matchCalls)
             }
             context.callLog.calls = testCalls
-            if (result.size > 0)
+            if (result.isNotEmpty())
                failAction(result)
             return result
 
