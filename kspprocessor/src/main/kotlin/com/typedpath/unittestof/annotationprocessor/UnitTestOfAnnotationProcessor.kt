@@ -37,13 +37,13 @@ class UnitTestOfAnnotationProcessor : AbstractProcessor() {
         val testTargets: Set<TypeMirror> = roundEnv.rootElements
             .filter { it.kind == ElementKind.CLASS }
             .map { it as TypeElement }
-            .flatMap { it.getInterfaces() }
+            .flatMap { it.interfaces }
             .filterIsInstance<DeclaredType>()
             .filter { UnitTestOf::class.java.name.equals(fullName(it.asElement())) }
             .flatMap { it.typeArguments }
             .toSet()
 
-        val emitJava = processingEnv.options.containsKey(EMIT_JAVA_OPTION_NAME) && "true".equals(processingEnv.options[EMIT_JAVA_OPTION_NAME])
+        val emitJava = processingEnv.options.containsKey(EMIT_JAVA_OPTION_NAME) && "true" == processingEnv.options[EMIT_JAVA_OPTION_NAME]
             info(
                 "option $EMIT_JAVA_OPTION_NAME=true in progress **************** emitJava:${emitJava} from ${processingEnv.options[EMIT_JAVA_OPTION_NAME]}"
             )
@@ -83,8 +83,8 @@ class UnitTestOfAnnotationProcessor : AbstractProcessor() {
         }
 
         val dependantInterfaces = mutableMapOf<String, TestableRoots2Kotlin.Interface>()
-        testTargets.forEach {
-            dependantInterfacesOfClass((it as DeclaredType).asElement()).forEach {
+        testTargets.forEach { target ->
+            dependantInterfacesOfClass((target as DeclaredType).asElement()).forEach {
                 dependantInterfaces[it.key] = it.value
             }
         }
@@ -99,7 +99,7 @@ class UnitTestOfAnnotationProcessor : AbstractProcessor() {
         return true
     }
 
-    fun writeSource(rootDirectory: String?, packageName: String, className: String, src: String, emitJava: Boolean) {
+    private fun writeSource(rootDirectory: String?, packageName: String, className: String, src: String, emitJava: Boolean) {
        info(
             """writing source rootDirectory: $rootDirectory, packageName: $packageName, className: $className, src: String, emitJava: $emitJava"""
         )
@@ -122,12 +122,12 @@ class UnitTestOfAnnotationProcessor : AbstractProcessor() {
 
     }
 
-    fun printEl(element: Element, margin: String ="") {
-        warn("$margin ${element} ${element.enclosingElement}")
+    private fun printEl(element: Element, margin: String ="") {
+        warn("$margin $element ${element.enclosingElement}")
         element.enclosedElements.forEach { printEl(it, margin + " ") }
     }
 
-    fun fullName(el: Element) =  "${processingEnv.elementUtils.getPackageOf(el).qualifiedName}.${el.simpleName}"
+    private fun fullName(el: Element) =  "${processingEnv.elementUtils.getPackageOf(el).qualifiedName}.${el.simpleName}"
 
     fun interfaces(element: Element) : List<Element> =
         processingEnv.typeUtils.directSupertypes(element.asType()).map{
@@ -135,11 +135,11 @@ class UnitTestOfAnnotationProcessor : AbstractProcessor() {
         }.filter { it.kind==ElementKind.INTERFACE }
 
 
-    fun warn(str: String) {
+    private fun warn(str: String) {
         processingEnv.messager.printMessage(Diagnostic.Kind.WARNING, "${UnitTestOfAnnotationProcessor::class.simpleName} $str")
     }
 
-    fun info(str: String) {
+    private fun info(str: String) {
         if (info) processingEnv.messager.printMessage(Diagnostic.Kind.OTHER, "${UnitTestOfAnnotationProcessor::class.simpleName} $str")
     }
 

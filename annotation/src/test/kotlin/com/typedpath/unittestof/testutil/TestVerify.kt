@@ -5,7 +5,7 @@ import org.junit.jupiter.api.Test
 
 class TestVerify {
 
-    val verifier = Verifier()
+    private val verifier = Verifier()
 
     @Test
     fun testExactUnorderedRaw() {
@@ -94,10 +94,10 @@ class TestVerify {
             CallCentre.Call("proxy4", "call2", arrayOf("hello")))
         val errors = verifier.matchOrdered(testCalls, matchCalls)
         // one pass, 1 fail
-        assertEquals(2, errors.size, "expected 1 error got ${errors.size} : ${System.lineSeparator()} ${errors.joinToString (System.lineSeparator())} ")
-        val errorsSwitched = verifier.matchOrdered(matchCalls, testCalls)
+        assertEquals(2, errors.size, "expected 2 error got ${errors.size} : ${System.lineSeparator()} ${errors.joinToString (System.lineSeparator())} ")
+        val errorsSwitched = verifier.matchOrdered(testCalls, matchCalls)
         // one pass, 1 fail
-        assertEquals(2, errorsSwitched.size, "expected 1 error got ${errors.size} : ${System.lineSeparator()} ${errors.joinToString (System.lineSeparator())} ")
+        assertEquals(2, errorsSwitched.size, "expected 2 error got ${errors.size} : ${System.lineSeparator()} ${errors.joinToString (System.lineSeparator())} ")
 
     }
 

@@ -9,15 +9,7 @@ open class ServiceProxyContext<T>(kclass: KClass<*>, val callCentre: CallCentre,
 
     constructor(clazz: Class<*>,  callCentre: CallCentre, id: String) : this(Reflection.createKotlinClass(clazz), callCentre, id)
 
-    val methodId2Arguments = mutableMapOf<String, MutableList<Array<Any>>>()
-    fun getArgumentsByMethodId(methodId: String) : List<Array<Any>> {
-        var arguments = methodId2Arguments.get(methodId)
-        if (arguments==null) {
-            arguments =  mutableListOf<Array<Any>>()
-            methodId2Arguments.put(methodId, arguments)
-        }
-        return arguments
-    }
+    private val methodId2Arguments = mutableMapOf<String, MutableList<Array<Any>>>()
 
     val dynamicInvocationHandler = { _: Any, method: Method, args: Array<Any>  ->
         val methodId = CallCentre.MatchRow.methodId(method)

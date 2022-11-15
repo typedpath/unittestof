@@ -1,6 +1,6 @@
 package com.typedpath.unittestof.testutil
 
-class VerifierStub(val verifyReturn: List<String>) : IVerifier {
+class VerifierStub(private val verifyReturn: List<String>) : IVerifier {
 
     val  callName2Params =  mutableMapOf<String, Pair<List<CallCentre.Call>, List<CallCentre.Call>>>()
 
@@ -20,7 +20,7 @@ class VerifierStub(val verifyReturn: List<String>) : IVerifier {
     }
 
     override fun matchUnordered(testCalls: List<CallCentre.Call>, matchCalls: List<CallCentre.Call>): List<String> {
-        callName2Params[IVerifier::matchOrdered.name] = Pair(testCalls, matchCalls)
+        callName2Params[IVerifier::matchUnordered.name] = Pair(testCalls, matchCalls)
         return verifyReturn
     }
 }

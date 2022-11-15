@@ -14,8 +14,8 @@ import com.typedpath.unittestof.processor.Ksp2ModelMapper.fullName
 import com.typedpath.unittestof.processor.TestableRoots2Kotlin
 
 
-class UnitTestOfKspSymbolProcessor(val environment: SymbolProcessorEnvironment) : SymbolProcessor {
-    var invoked = false
+class UnitTestOfKspSymbolProcessor(private val environment: SymbolProcessorEnvironment) : SymbolProcessor {
+    private var invoked = false
 
     fun warn(str: String) = environment.logger.warn("${javaClass.simpleName} $str")
 
@@ -31,8 +31,7 @@ class UnitTestOfKspSymbolProcessor(val environment: SymbolProcessorEnvironment) 
             .filter { ClassKind.CLASS == it.classKind}
             .flatMap { it.superTypes }
             .map {it.resolve()}
-            .filter { fullName(it.declaration.qualifiedName)
-                .equals(UnitTestOf::class.java.name) }
+            .filter { fullName(it.declaration.qualifiedName) == UnitTestOf::class.java.name }
             .flatMap { it.arguments}
             .map {it.type}
             .filterIsInstance<KSTypeReference>()

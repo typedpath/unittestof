@@ -20,7 +20,7 @@ import testutil.BeanContext
 fun conciseTypeString(type: String) = type.replace("java.lang.", "")
 fun conciseTypeCast(type: String) : String {
     val conciseTypeString = conciseTypeString(type)
-    return if ("Any".equals(conciseTypeString)) "" else " as $conciseTypeString"
+    return if ("Any" == conciseTypeString) "" else " as $conciseTypeString"
 }
 
 val beanContextClassName = BeanContext::class.java.name
@@ -34,13 +34,13 @@ val matchRowClassName = CallCentre.MatchRow::class.java.name.replace("$", ".")
 val matchRowSimpleClassName = CallCentre.MatchRow::class.java.simpleName
 
 
-class TestableRoots2Kotlin(val emitJava: Boolean) {
+class TestableRoots2Kotlin(private val emitJava: Boolean) {
     fun textContextSource(creator: String, packagename: String, className: String, root: Model2FactoryMapper.FactoryClass) : String {
         return (
 """${header(packagename, creator)}
 ${import(beanContextClassName)}    
-${if (!emitJava) "class ${className} : ${beanContextShortName}<${root.shortName}>() {" else 
-"public class ${className} extends ${beanContextShortName}<${root.shortName}> {"}
+${if (!emitJava) "class $className : ${beanContextShortName}<${root.shortName}>() {" else 
+"public class $className extends ${beanContextShortName}<${root.shortName}> {"}
 ${root.constructorParams.map {(
 """    ${recorderDeclaration(it)}
     ${serviceDeclaration(it)} 
@@ -58,10 +58,10 @@ ${if (!emitJava)"    override val target = ${root.shortName}(${root.constructorP
     """)
     }
 
-fun recorderDeclaration(param: Model2FactoryMapper.FactoryClassParam) = if (!emitJava)
+private fun recorderDeclaration(param: Model2FactoryMapper.FactoryClassParam) = if (!emitJava)
     """val ${param.name}Recorder = ${Interface.interfaceName2TestProxyName(param.type)}(callLog, "${param.name}")""" else
     """public final ${Interface.interfaceName2TestProxyName(param.type)} ${param.name}Recorder = new ${Interface.interfaceName2TestProxyName(param.type)}(getCallLog(), "${param.name}");"""
-fun serviceDeclaration(param: Model2FactoryMapper.FactoryClassParam) = if (!emitJava)
+private fun serviceDeclaration(param: Model2FactoryMapper.FactoryClassParam) = if (!emitJava)
     """val ${param.name} = ${param.name}Recorder.proxy""" else
     """public final ${param.type} ${param.name} = ${param.name}Recorder.getProxy(); """
 
@@ -95,13 +95,13 @@ fun proxyContextClassDeclaration(iface: Interface, className: String) : String {
 """@Suppress("unused")
 class ${className}(callCentre: ${callLogClassShortName}, id: String) : ${serviceProxyContextClassname}<${iface.shortName}>(${iface.packageName}.${iface.shortName}::class, callCentre, id) {"""
     } else (
-"""public class ${className} extends  ${serviceProxyContextClassname}<${iface.shortName}> {
+"""public class $className extends  ${serviceProxyContextClassname}<${iface.shortName}> {
 public ${className}(${callLogClassShortName} callCentre, String id) {
    super(${iface.packageName}.${iface.shortName}.class, callCentre, id);
 }""")
 }
 
-fun textProxyContextMethod(method: Interface.Method) = if (!emitJava)
+private fun textProxyContextMethod(method: Interface.Method) = if (!emitJava)
 """    @Suppress("UNUSED_PARAMETER")
     fun when${method.name.replaceFirstChar { it.titlecase() }}(${method.params.map { textProxyContextParam(it) }
     .joinToString(separator = ", ")} ${if (method.params.size>0) ", " else ""} result: ${method.returnType.replace("java.lang.", "")}) {
@@ -116,7 +116,7 @@ fun textProxyContextMethod(method: Interface.Method) = if (!emitJava)
 fun customCaptureTypeName(method: Interface.Method) = "${method.methodId()}Params"
 
 
-fun customCaptureType(method: Interface.Method) = if (!emitJava) "data class ${customCaptureTypeName(method)}( ${method.params.map{
+private fun customCaptureType(method: Interface.Method) = if (!emitJava) "data class ${customCaptureTypeName(method)}( ${method.params.map{
     "val ${it.name}: ${conciseTypeString(it.type)}" }.joinToString (", ")} )" else
 """public static class ${customCaptureTypeName(method)} {
 ${method.params.map{
@@ -133,7 +133,7 @@ return (
 """    ${if (method.params.size==0) testProxyContextCaptureMethodZeroParam(method) else if (method.params.size>1) testProxyContextCaptureMethodMultiParam(method) else testProxyContextCaptureMethodSingleParam(method)}        
 """)}
 
-fun testProxyContextCaptureMethodMultiParam(method: Interface.Method) : String {
+private fun testProxyContextCaptureMethodMultiParam(method: Interface.Method) : String {
         val captureType = customCaptureTypeName(method)
         return if (!emitJava)
  """${customCaptureType(method)}        
@@ -166,7 +166,7 @@ fun testProxyContextCaptureMethodSingleParam(method: Interface.Method) : String 
     } """
 }
 
-fun testProxyContextCaptureMethodZeroParam(method: Interface.Method) : String {
+private fun testProxyContextCaptureMethodZeroParam(method: Interface.Method) : String {
         return if (!emitJava)
 """    @Suppress("UNUSED_PARAMETER")
     fun capture${method.name.replaceFirstChar { it.titlecase() }}(${method.params.map { textProxyContextParam(it) }
@@ -184,7 +184,7 @@ fun textProxyContextParam(param: Interface.Param) = if (!emitJava)
         """${param.name}: Match<${conciseTypeString(param.type)}>"""
     else """Match<${conciseTypeString(param.type)}> ${param.name}"""
 
-fun header(packagename: String, creator: String) = (
+private fun header(packagename: String, creator: String) = (
 """${if (packagename.trim().length == 0) "" else "package $packagename${if (emitJava) ";" else ""}"}        
 // Factory generated on ${Date()}
 //   by ${javaClass.name}

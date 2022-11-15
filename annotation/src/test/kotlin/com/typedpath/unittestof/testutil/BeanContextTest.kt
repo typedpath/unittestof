@@ -28,7 +28,7 @@ class BeanContextTest {
     }
 
     // TODO other calls
-    fun testMatch(orderingType: BeanContext.Companion.OrderingOption, verifyMethod: String) {
+    private fun testMatch(orderingType: BeanContext.Companion.OrderingOption, verifyMethod: String) {
         val expectedVerifierResult = listOf("a", "b")
         val verifierStub = VerifierStub(expectedVerifierResult)
         val context = TestContext(verifier = verifierStub)

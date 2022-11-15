@@ -8,10 +8,10 @@ CallLogAndMatch CallCentre
  */
 class CallCentre {
     class Match<T>(val match: (t: T)->Boolean) {
-        constructor(t: T) : this ( { tin ->  t==null && tin==null || t!=null && t.equals(tin)}) { }
+        constructor(t: T) : this ( { tin ->  t==null && tin==null || t!=null && t == tin})
         companion object {
             @JvmStatic
-            fun <T> any() = Match<T>({true})
+            fun <T> any() = Match<T> { true }
         }
         @SuppressWarnings("unchecked")
         fun matchUntyped(o: Any?) : Boolean {
@@ -27,14 +27,14 @@ class CallCentre {
 
     class MatchRow(val proxyId: String, val strMethod: String, val matchers: List<Match<*>>, val result: Any?) {
         companion object {
-            fun normalizeTypeName(name: String) = name.replace("java.lang.", "")
+            private fun normalizeTypeName(name: String) = name.replace("java.lang.", "")
 
             fun methodId(m: Method) =
                 "${m.name}_${m.parameterTypes.map { normalizeTypeName(it.name) }.joinToString("_")}"
         }
         fun matches(proxyIdIn: String, methodIdIn: String, args: Array<Any>) : Boolean =
-            proxyIdIn.equals(proxyId) && methodIdIn.equals(strMethod) &&
-                    !matchers.indices.any { !matchers[it].matchUntyped(args.get(it)) }
+            proxyIdIn == proxyId && methodIdIn == strMethod &&
+                    !matchers.indices.any { !matchers[it].matchUntyped(args[it]) }
     }
 
     private val matchRows = mutableListOf<MatchRow>()
@@ -52,25 +52,19 @@ class CallCentre {
     }
 
     class Call(val proxyId: String, val methodId: String, val args: Array<Any>) {
-        companion object {
-            private fun diff(val1: Any?, val2: Any?) =
-                if (val1 != null) !val1.equals(val2)
-                else if (val2 != null) !val2.equals(val1)
-                else false
-        }
 
         override fun equals(other: Any?): Boolean {
             if (other !is Call) {
                 return false
             }
-            if (!proxyId.equals(other.proxyId)) return false
-            if (!methodId.equals(other.methodId)) return false
+            if (proxyId != other.proxyId) return false
+            if (methodId != other.methodId) return false
             if (args.size!=other.args.size) {
                 return false
             }
 
             for (i in 0 until args.size) {
-                if (diff(args[i], other.args[i])) return false
+                if (args[i] !=  other.args[i]) return false
             }
             return true
         }
@@ -87,7 +81,7 @@ class CallCentre {
 
     fun getArgumentsByProxyIdMethodId(proxyId: String, methodId: String) : List<Array<Any>> {
         val key = "$proxyId/$methodId"
-        return _calls.filter { "${it.proxyId}/${it.methodId}".equals(key) }.map {it.args}
+        return _calls.filter { "${it.proxyId}/${it.methodId}" == key }.map {it.args}
     }
 
 /*    val ids2Arguments = mutableMapOf<String, MutableList<Array<Any>>>()

@@ -13,7 +13,7 @@ class Verifier : IVerifier {
     }
 
 
-  fun matchUnordered(testCalls: List<CallCentre.Call>, matchCalls: List<CallCentre.Call>, exact: Boolean = true): List<String> {
+  private fun matchUnordered(testCalls: List<CallCentre.Call>, matchCalls: List<CallCentre.Call>, exact: Boolean = true): List<String> {
         val result = mutableListOf<String>()
         var diffCount = 0
         if (exact && testCalls.size != matchCalls.size) {
@@ -26,21 +26,21 @@ class Verifier : IVerifier {
             var callMatched=false
             for ( t in 0  until testCalls.size  ) {
                 if (!unmatchedTestCalls.contains(t)) continue
-                val diff = !testCalls[t].equals(matchCall)
+                val diff = testCalls[t] != matchCall
                 if (!diff) {
                     callMatched=true
                     unmatchedTestCalls.remove(t)
-                    result.add("expected call matched ${m} ${string(matchCall)}")
+                    result.add("expected call matched $m ${string(matchCall)}")
                     break
                 }
             }
             if (!callMatched) {
-                result.add("expected call not matched ${m} expected call:${string(matchCall)}")
+                result.add("expected call not matched $m expected call:${string(matchCall)}")
                 diffCount++
             }
 //                result.add("${i} ${if (diff) "FAIL" else "PASS"} expected call:${string(expectedCall)} actualCall: ${string(actualCall)}")
         }
-        unmatchedTestCalls.forEach { result.add("test call not matched ${it} expected call:${string(testCalls[it])}") }
+        unmatchedTestCalls.forEach { result.add("test call not matched $it expected call:${string(testCalls[it])}") }
 
         return if (diffCount == 0) emptyList() else result
     }
@@ -56,9 +56,9 @@ class Verifier : IVerifier {
         while (i < max(testCalls.size, matchCalls.size)) {
             val actualCall = if (i<testCalls.size)  testCalls[i] else null
             val expectedCall = if (i<matchCalls.size) matchCalls[i] else null
-            val diff = actualCall == null || expectedCall == null || !actualCall.equals(expectedCall)
+            val diff = actualCall == null || expectedCall == null ||  actualCall != expectedCall
             if (diff) diffCount++
-            result.add("${i} ${if (diff) "FAIL" else "PASS"} expected call:${string(expectedCall)} actualCall: ${string(actualCall)}")
+            result.add("$i ${if (diff) "FAIL" else "PASS"} expected call:${string(expectedCall)} actualCall: ${string(actualCall)}")
             i++
         }
         return if (diffCount == 0) emptyList() else result
@@ -69,12 +69,11 @@ class Verifier : IVerifier {
         var diffCount = 0
         var testIndex = 0
         var matchIndex = 0
-        while (matchIndex < matchCalls.size || testIndex<testCalls.size) {
+        while (matchIndex < matchCalls.size && testIndex<testCalls.size) {
             val actualCall = testCalls[testIndex]
-            val matchCall = if (matchIndex<matchCalls.size) matchCalls[matchIndex] else null
-            val diff = !actualCall.equals(matchCall)
-            if (!diff) {
-                result.add("PASS matched at index ${testIndex} callToMatch:${string(matchCall)} actualCall: ${string(actualCall)}")
+            val matchCall =  matchCalls[matchIndex]
+            if (actualCall == matchCall) {
+                result.add("PASS matched at index $testIndex callToMatch:${string(matchCall)} actualCall: ${string(actualCall)}")
                 matchIndex++
             }
             testIndex++
@@ -82,7 +81,7 @@ class Verifier : IVerifier {
         while (matchIndex<matchCalls.size) {
             val matchCall = matchCalls[matchIndex]
             diffCount++
-            result.add("unmatched requirement at index ${matchIndex} callToMatch:${string(matchCall)}")
+            result.add("unmatched requirement at index $matchIndex callToMatch:${string(matchCall)}")
             matchIndex++
         }
 
