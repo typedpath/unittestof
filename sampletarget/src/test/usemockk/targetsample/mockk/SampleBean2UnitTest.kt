@@ -36,6 +36,7 @@ class SampleBean2UnitTest {
         every { service1.sayHello(capture(nameSlot))} returns "hello back"
         every { service2.log(capture(logSeveritySlot), capture(logTextSlot))}  returns "logged!"
         val result = target.dostuff("hello")
+        assertEquals("hello back", result);
         val helloSent = nameSlot.captured
         assertEquals("hello", helloSent)
         assertEquals( "critical", logSeveritySlot.captured)

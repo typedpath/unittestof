@@ -1,13 +1,13 @@
-val useKapt = true
+val useKapt = false
 // its kapt or ksp
-val useKsp = !useKapt
+val useKsp = true
 val useMockk = true
 
 plugins {
 
     kotlin("jvm")
     // uncomment for kapt
-    kotlin("kapt") version "1.7.10"
+    //kotlin("kapt") version "1.7.10"
     // uncomment for ksp
     id("com.google.devtools.ksp")
     idea
@@ -25,7 +25,7 @@ dependencies {
     implementation(kotlin("stdlib"))
     implementation( "com.typedpath.unittestof:annotation:1.0-SNAPSHOT")
     //uncomment for kapt
-    if (useKapt) kaptTest ("com.typedpath.unittestof:kspprocessor:1.0-SNAPSHOT")
+    //if (useKapt) kaptTest ("com.typedpath.unittestof:kspprocessor:1.0-SNAPSHOT")
     //uncomment for ksp
     if ( useKsp ) kspTest("com.typedpath.unittestof:kspprocessor:1.0-SNAPSHOT")
     testImplementation(kotlin("test:1.5.30+") )

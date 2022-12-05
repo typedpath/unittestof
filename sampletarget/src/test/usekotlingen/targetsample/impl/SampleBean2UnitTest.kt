@@ -18,6 +18,7 @@ class SampleBean2UnitTest : UnitTestOf<Bean2>{
         context.service1Recorder.whenSayHello(any(), "hello back")
         context.service2Recorder.whenLog(any(), any(), "logged!")
         val result = context.target.dostuff("hello")
+        assertEquals("hello back", result);
         val hellosSent = context.service1Recorder.captureSayHello(any())
         assertEquals("hello", hellosSent[0])
         val logsSent = context.service2Recorder.captureLog(any(), any())

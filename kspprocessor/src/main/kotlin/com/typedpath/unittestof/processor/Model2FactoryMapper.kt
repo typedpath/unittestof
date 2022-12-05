@@ -18,6 +18,7 @@ class Model2FactoryMapper {
         fun fullName() : String = "$packageName.${shortName}"
     }
 
+    @Suppress("unused")
     companion object {
         private fun asString(p: FactoryClassParam) = """${p.name}:${p.type}"""
         fun asString(f: FactoryClass)  = """${f.packageName}.${f.shortName} => ${f.constructorParams.joinToString (", "){ asString(it) }}"""

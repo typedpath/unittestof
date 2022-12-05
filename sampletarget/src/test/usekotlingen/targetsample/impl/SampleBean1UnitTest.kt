@@ -59,7 +59,7 @@ class SampleBean1UnitTest : UnitTestOf<Bean1> {
     @Test
     fun testProxyNoArgMatchingVerifyCallsUnordered() {
         setupVerifyTest()
-        var verificationErrorMessage: String? =null
+        var verificationErrorMessage: String?
         try {
             // this follows Mockk - throws an assertion if calls dont match
             verifyUnordered(context) {
@@ -83,7 +83,7 @@ class SampleBean1UnitTest : UnitTestOf<Bean1> {
     @Test
     fun testProxyNoArgMatchingVerifyCallsOrdered() {
         setupVerifyTest()
-        var verificationErrorMessage: String? =null
+        var verificationErrorMessage: String?
         try {
             // this follows Mockk - throws an assertion if calls dont match
             verifyOrdered(context) {
@@ -110,7 +110,7 @@ class SampleBean1UnitTest : UnitTestOf<Bean1> {
         setupVerifyTest()
         val greeting3 = context.target.officialGreet(listOf(Pair("Mr", "Parrot")))
         assertEquals(greeting3, "tweeet")
-        var verificationErrorMessage: String? =null
+        var verificationErrorMessage: String?
         try {
             // this follows Mockk - throws an assertion if calls dont match
             verifyUnorderedExact(context) {
@@ -154,7 +154,7 @@ class SampleBean1UnitTest : UnitTestOf<Bean1> {
         setupVerifyTest()
         val greeting3 = context.target.officialGreet(listOf(Pair("Mr", "Parrot")))
         assertEquals(greeting3, "tweeet")
-        var verificationErrorMessage: String? =null
+        var verificationErrorMessage: String?
         try {
             // this follows Mockk - throws an assertion if calls dont match
             verifyOrderedExact(context) {

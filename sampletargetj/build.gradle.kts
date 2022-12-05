@@ -18,7 +18,8 @@ dependencies {
     testImplementation("org.junit.jupiter:junit-jupiter-api:5.6.0")
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.6.0")
     if(useUnitTestOf || useUnitTestOfExtra) testImplementation( "com.typedpath.unittestof:annotation:1.0-SNAPSHOT")
-    //testImplementation("cglib:cglib:3.2.4")
+    // testImplementation("cglib:cglib:3.2.4")
+    // to test with kapt uncomment this
     if(useUnitTestOf || useUnitTestOfExtra) testAnnotationProcessor  ("com.typedpath.unittestof:kspprocessor:1.0-SNAPSHOT")
     if (useMockito) testImplementation("org.mockito:mockito-all:1.9.5")
 }

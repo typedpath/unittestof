@@ -17,6 +17,7 @@ import com.typedpath.unittestof.processor.TestableRoots2Kotlin
 class UnitTestOfKspSymbolProcessor(private val environment: SymbolProcessorEnvironment) : SymbolProcessor {
     private var invoked = false
 
+    @Suppress("unused")
     fun warn(str: String) = environment.logger.warn("${javaClass.simpleName} $str")
 
     override fun process(resolver: Resolver): List<KSAnnotated> {

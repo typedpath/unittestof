@@ -23,15 +23,15 @@ fun conciseTypeCast(type: String) : String {
     return if ("Any" == conciseTypeString) "" else " as $conciseTypeString"
 }
 
-val beanContextClassName = BeanContext::class.java.name
+val beanContextClassName: String = BeanContext::class.java.name
 val beanContextShortName = BeanContext::class.simpleName
-val serviceProxyContextClassname = ServiceProxyContext::class.java.name
-val callLogClassName = CallCentre::class.java.name
+val serviceProxyContextClassname: String = ServiceProxyContext::class.java.name
+val callLogClassName: String = CallCentre::class.java.name
 val callLogClassShortName = CallCentre::class.simpleName
 val matcherClassName = CallCentre.Match::class.java.name.replace("$", ".")
 val matchRowClassName = CallCentre.MatchRow::class.java.name.replace("$", ".")
 
-val matchRowSimpleClassName = CallCentre.MatchRow::class.java.simpleName
+val matchRowSimpleClassName: String = CallCentre.MatchRow::class.java.simpleName
 
 
 class TestableRoots2Kotlin(private val emitJava: Boolean) {

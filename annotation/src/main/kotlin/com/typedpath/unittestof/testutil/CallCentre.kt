@@ -8,6 +8,7 @@ CallLogAndMatch CallCentre
  */
 class CallCentre {
     class Match<T>(val match: (t: T)->Boolean) {
+        @Suppress("unused")
         constructor(t: T) : this ( { tin ->  t==null && tin==null || t!=null && t == tin})
         companion object {
             @JvmStatic
@@ -37,6 +38,7 @@ class CallCentre {
     }
 
     private val matchRows = mutableListOf<MatchRow>()
+    @Suppress("unused")
     fun add(matchRow: MatchRow) = matchRows.add(matchRow)
 
     fun match(proxyId: String, methodId: String, args: Array<Any>) : Any? {
@@ -85,16 +87,5 @@ class CallCentre {
         return _calls.filter { "${it.proxyId}/${it.methodId}" == key }.map {it.args}
     }
 
-/*    val ids2Arguments = mutableMapOf<String, MutableList<Array<Any>>>()
-    fun getArgumentsByProxyIdMethodId(proxyId: String, methodId: String) : List<Array<Any>> {
-        val key = "$proxyId/$methodId"
-        var arguments = ids2Arguments.get(key)
-        if (arguments==null) {
-            arguments =  mutableListOf<Array<Any>>()
-            ids2Arguments.put(key, arguments)
-        }
-        return arguments
-    }
-*/
 }
 

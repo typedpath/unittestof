@@ -6,6 +6,7 @@ abstract class BeanContext<T>(val verifier:IVerifier = Verifier()) {
     val callLog = CallCentre()
     abstract val target: T
 
+    @Suppress("unused")
     companion object {
 
         enum class OrderingOption { Ordered, OrderedExact, Unordered, UnorderedExact }

@@ -23,7 +23,6 @@ class UnitTestOfAnnotationProcessor : AbstractProcessor() {
         const val KAPT_KOTLIN_GENERATED_OPTION_NAME = "kapt.kotlin.generated"
         const val EMIT_JAVA_OPTION_NAME = "UnitTestOf_emitJava"
         const val KAPT_KOTLIN_GENERATED_OPTION_NAME_DESCRIPTION = "target directory for generated kotlin source"
-        const val KAPT_JAVA_GENERATED_OPTION_NAME ="kapt.java.generated"
     }
 
     override fun process(
@@ -48,8 +47,8 @@ class UnitTestOfAnnotationProcessor : AbstractProcessor() {
                 "option $EMIT_JAVA_OPTION_NAME=true in progress **************** emitJava:${emitJava} from ${processingEnv.options[EMIT_JAVA_OPTION_NAME]}"
             )
 
-        val kaptKotlinGeneratedDir = processingEnv.options[KAPT_KOTLIN_GENERATED_OPTION_NAME]
-        if (!emitJava && kaptKotlinGeneratedDir == null) {
+        val rootDirectory = processingEnv.options[KAPT_KOTLIN_GENERATED_OPTION_NAME]
+        if (!emitJava && rootDirectory == null) {
             processingEnv.messager.printMessage(
                 Diagnostic.Kind.ERROR,
                 """option $KAPT_KOTLIN_GENERATED_OPTION_NAME ($KAPT_KOTLIN_GENERATED_OPTION_NAME_DESCRIPTION) is required not found in 
@@ -58,7 +57,6 @@ class UnitTestOfAnnotationProcessor : AbstractProcessor() {
             )
             return true
         }
-        val rootDirectory = kaptKotlinGeneratedDir
 
         val creator = UnitTestOfAnnotationProcessor::class.java.name
 
@@ -122,6 +120,7 @@ class UnitTestOfAnnotationProcessor : AbstractProcessor() {
 
     }
 
+    @Suppress("unused")
     private fun printEl(element: Element, margin: String ="") {
         warn("$margin $element ${element.enclosingElement}")
         element.enclosedElements.forEach { printEl(it, "$margin ") }
@@ -129,6 +128,7 @@ class UnitTestOfAnnotationProcessor : AbstractProcessor() {
 
     private fun fullName(el: Element) =  "${processingEnv.elementUtils.getPackageOf(el).qualifiedName}.${el.simpleName}"
 
+    @Suppress("unused")
     fun interfaces(element: Element) : List<Element> =
         processingEnv.typeUtils.directSupertypes(element.asType()).map{
             this.processingEnv.typeUtils.asElement(it)

@@ -5,9 +5,8 @@ package targetsample;
 //@Autowire
 class Bean2(val service1: IService1, val service2: IService2) {
     fun dostuff(str: String) : String{
-        service1.sayHello(str)
         service2.log("critical", "doing stuff")
-        return "hello"
+        return service1.sayHello(str)
     }
 
 }
