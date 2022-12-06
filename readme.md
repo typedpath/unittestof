@@ -31,7 +31,7 @@ gradle clean publishToMavenLocal
 cd ../sampletarget
 gradle clean build
 # run the java tests
-cd ../sampletarget
+cd ../sampletargetj
 gradle clean build
 </pre>
 
