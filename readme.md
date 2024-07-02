@@ -133,3 +133,9 @@ This comparison is defined in project sampletargetj.  Setting useUnitTestOfExtra
 | compileTestJava                                    |                             0.222                              |                                                     0.082                                                     |
 | compileJava                                        |                             0.075                              |                                                     0.076                                                     |
 | 
+
+### Sample Generated Code
+
+Kotlin sample [here](docs/samplegeneratedcode/kotlin) 
+
+Java sample [here](docs/samplegeneratedcode/java) 
